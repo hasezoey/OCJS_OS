@@ -1,225 +1,222 @@
-/* init */
-var global = {
-    /** Current Postitions */
-    pos: {
-        /** Current x */
-        x: 0,
-        /** Current y */
-        y: 0,
-    },
-}
-
-function getComponentList(type) { // copyed out the ROM
-    var allComp = computer.list();
-    var results = []
-    for (comp in allComp) {
-        /* disabled because of spam, let it in for debug */
-        //computer.print(comp);
-        //computer.print(allComp[comp]);
-        if (allComp[comp] == type) {
-            results.push(comp);
-        }
-    }
-    //computer.print(JSON.stringify(results));
-    return results;
-}
-
-// object because a class must be "new"ed
-var fs = {
-    /**
-    * Returns how much space has the filesystem
-    * give a type like mb, kb, none for bytes
-    * (if no parameter is given it uses filesystem 0)
-    * @param {string} t
-    * @param {number} system
-    */
-    spaceTotal: (t = 'b', system = 0) => {
-        var b = computer.invokeSync(getComponentList('filesystem')[system], 'spaceTotal', [])[0];
-        switch (t) {
-            case 'mb':
-                return b / 2000;
-                break;
-            case 'kb':
-                return b / 1000;
-                break;
-            case 'b':
-            default:
-                return b;
-                break;
-        }
-    },
-    /**
-    * Returns if a FileSystem is ReadOnly
-    * (if no parameter is given it uses filesystem 0)
-    * @param {number} system
-    * @returns {boolean}
-    */
-    isReadOnly: (system = 0) => {
-        return computer.invokeSync(getComponentList('filesystem')[system], 'isReadOnly', [])[0]
-    },
-    /**
-    * Gets the Label of a FileSystem
-    * (if no parameter is given it uses filesystem 0)
-    * @param {number} system
-    * @returns {boolean}
-    */
-    getLabel: (system = 0) => {
-        return computer.invokeSync(getComponentList('filesystem')[system], 'getLabel', [])[0]
-    },
-    /**
-    * List the Content in the path
-    * (if no system-parameter is given it uses filesystem 0)
-    * (Not Function)
-    * @param {string} path
-    * @param {number} system
-    */
-    ls: (path, system) => {
-        if (typeof path !== 'string') path = JSON.stringify(path);
-        if (path.length <= 0) return false;
-        try {
-            return computer.invokeSync(getComponentList('filesystem')[system], 'list', [path])[0];
-        }
-        catch (err) {
-            return err;
-        }
-    },
-}
-
-var term = {
-    /**
-    * write text to screen with pos
-    * "\n" not handeled
-    * @param {number} x
-    * @param {number} y
-    * @param {string} text
-    * @param {function} cb
-     */
-    write: (x, y, text, cb) => {
-        if (typeof cb !== 'function') cb = () => { };
-        if (typeof text !== 'string') text = JSON.stringify(text);
-        if (/*typeof text !== 'string' || */text.length == 0) {
-            cb(false);
-            return;
-        }
-
-        var gpu = getComponentList('gpu')[0];
-        var gpu_res = computer.invokeSync(gpu, 'maxResolution', []);
-        var max = {
-            x: gpu_res[0],
-            y: gpu_res[1],
-        }
-
-        if (x > max.x || y > max.y) {
-            computer.invokeSync(gpu, 'set', [1, 1, 'Input was to high, max Resolution is ' + x + 'x' + y + 'y']);
-            cb(false);
-        }
-        if (x < 1 || y < 1) {
-            computer.invokeSync(gpu, 'set', [1, 1, 'Input was to low, min Input is 1, 1']);
-            cb(false);
-        }
-        if (text.length > max.x) {
-            text = text.substring(0, max.x);
-        }
-        computer.invoke(gpu, 'set', [x, y, text.toString()], () => {
-            cb(true);
-        }, (err) => {
-            cb(false);
-        });
-    },
-
-    /**
-    * Write text to screen to the next line
-    * "\n" handeled
-    * @param {string} text
-    * @param {function} cb
-     */
-    print: (text, cb) => {
-        var gpu = getComponentList('gpu')[0];
-        var gpu_res = computer.invokeSync(gpu, 'maxResolution', []);
-        var max = {
-            x: gpu_res[0],
-            y: gpu_res[1],
-        }
-        if (typeof text !== 'string') text = JSON.stringify(text);
-        var text_arr = text.trim().split('\n');
-
-        text_arr.forEach((item) => {
-            if (global.pos.y + 1 > max.y) {
-                computer.invokeSync(gpu, 'copy', [1, 2, max.x, max.y - 1, 0, -1]);
-                computer.invokeSync(gpu, 'fill', [0, max.y, max.x, max.y, " "]);
-                global.pos.y = max.y;
-            } else {
-                global.pos.y += 1; //+1 line
-            }
-            global.pos.x = 1; //set to char 1
-            computer.invokeSync(gpu, 'fill', [global.pos.x, global.pos.y, max.x, 1, " "]);
-            term.write(global.pos.x, global.pos.y, item);
-            //term.write(1, max.y - 1, 'global: ' + global.pos.x + 'x, ' + global.pos.y + 'y');
-            //term.write(1, max.y, 'max.x: '+max.x+' max.y: '+max.y);
-        });
-        // copy from line 2, char 1 until (max x&y) to line 1, char 0
-    },
-
-    /**
-    * Clears the Screen
-    * @param {function} cb
-     */
-    clear: (cb) => {
-        if (typeof cb !== 'function') cb = () => { };
-        var gpu = getComponentList('gpu')[0];
-        var gpu_res = computer.invokeSync(gpu, 'maxResolution', []);
-        var max = {
-            x: gpu_res[0],
-            y: gpu_res[1],
-        }
-        global.pos = {
-            x: 0,
-            y: 0,
-        }
-
-        computer.invoke(gpu, 'fill', [1, 1, max.x, max.y, " "], () => {
-            cb(true);
-        }, () => {
-            cb(false);
-        });
-    }
-}
-var t = 0;
-/**
- * This Function is only for computer.next,
- * to not re-execute this script, onyl this function
+/* This is the JSDOC Version
+ * 
+ * This is the ES6 Version of the Basic "init.js"
+ * convert it with babel cli 
+ * `npx babel .\init_ES6.js --watch --presets babel-preset-env --out-file ./init.js`
+ * install: `npm i -g babel-cli`
+ * and (for each folder, idk why) `npm i -D babel-preset-env`
  */
-function simEventLoop() { // will be called often
-    /* at the moment it is only an empty function,
-     because the other code should be executet async
-     and needs global values, and nothing at the moment
-     to be every tick...
-    */
 
-    /* spam test - gpu copy and so */
-    //if (t <= 100) {
-    //    term.print('t: ' + t);
-    //    t++;
-    //}
+/**@type {string}*/
+var mainFS = '';
+scaninit((addr) => {
+    mainFS = addr;
+});
+
+/**
+ * Basic Computer Class (to keep it sorted)
+ */
+class CComputer {
+    constructor() {
+        
+    }
+
+    /**
+     * Log to the Minecraft Log
+     * @param {string} msg The Message to Log
+     */
+    printToLog(msg) {
+        if (typeof msg == 'object') msg = JSON.stringify(msg);
+        if (typeof msg != 'string') {
+            throw new TypeError('"' + msg + '" is not an Object or String!');
+        } else {
+            computer.print(msg);
+        }
+    }
+
+    /**
+     * Default Invoke with JSDOC
+     * @param {string} addr The Address to call the method on
+     * @param {string} method The Method to be called
+     * @param {any[]} options Options in Array
+     * @param {function} cb Normal Callback
+     * @param {function} [errcb] Error Callback
+     */
+    invoke(addr, method, options, cb, errcb) {
+        if (!errcb) errcb = () => { };
+        computer.invoke(addr, method, options, cb, errcb);
+    }
+
+    /**
+     * Get a List of Component Addresses
+     * @returns {string[]}
+     */
+    compList() {
+        var allComp = computer.list();
+        var results = [];
+        for (var comp in allComp) {
+            results.push({ // its an object to make it better for JS usage
+                "type": allComp[comp],
+                "address": comp
+            });
+        }
+        return results;
+    }
+
+    /**
+     * Get All Components of Type
+     * @param {string} type The Type to filter for
+     * @returns {string[]} Array of Addresses
+     */
+    compListOfType(type) {
+        return this.compList() // get a list
+            .filter((v) => v.type == type) // filter for type
+            .map((v) => v.address); // return only the addresses
+    }
+
+    /**
+     * Crash the PC with an Error
+     * @param {string | Error} err
+     */
+    crash(err) {
+        computer.error(err);
+    }
 }
-computer.next(simEventLoop);
-/* init end */
+var extComputer = new CComputer(); // init the Class
 
-// here only for testing some gpu functions
-//var gpu = getComponentList('gpu')[0];
-//var gpu_res = computer.invokeSync(gpu, 'maxResolution', []);
-//var max = {
-//    x: gpu_res[0],
-//    y: gpu_res[1],
+class CTerm {
+    constructor() {
+        this.x = 1;
+        this.y = 1;
+    }
+
+    /**
+     * Write something to the screen
+     * @param {string | object} msg Text to write
+     * @param {boolean} [wrap] Line wrap?
+     */
+    write(msg, wrap = true) {
+        if (typeof msg == 'object') msg = JSON.stringify(msg);
+        if (typeof msg != 'string' && msg.toString) msg = msg.toString();
+        if (typeof msg != 'string' && !msg.toString) throw new Error('(term.write) msg.toString is not a function!');
+
+        var gpu = extComputer.compListOfType('gpu')[0];
+        extComputer.invoke(gpu, 'set', [this.x, this.y, msg], () => {
+            if (wrap) {
+                extComputer.invoke(gpu, 'getResolution', [], (x, y) => {
+                    this.x = 1;
+                    if (this.y + 1 > y) {
+                        extComputer.invoke(gpu, 'copy', [1, 1, x, y, 0, -1], () => {
+                            extComputer.invoke(gpu, 'fill', [1, y, x, 1, " "], () => {
+                                this.y = y;
+                            }, (err) => {
+                                extComputer.crash(err);
+                            });
+                        }, (err) => {
+                            extComputer.crash(err);
+                        });
+                    } else this.y += 1
+                }, (err) => {
+                    extComputer.crash(err);
+                });
+            }
+        }, function (err) {
+            extComputer.crash(err);
+        });
+    }
+}
+var term = new CTerm(); // init the term Class
+
+class FileHandler {
+    /**
+     * 
+     * @param {string} file Path + File
+     * @param {string} [fileSystem] wich FileSystem to use. default: mainFS
+     */
+    constructor(file, fileSystem = mainFS) {
+        if (typeof file != 'string') throw new TypeError('file must always be a string (path)');
+        if (typeof fileSystem != 'string') throw new TypeError('fileSystem must always be a string (address)');
+        this.file = file;
+        this.fileSystem = fileSystem;
+        this.handle = 0;
+    }
+
+    /**
+     * Reads the File
+     * @param {function} cb Callback
+     */
+    read(cb) {
+        if (!this.handle) throw new Error('Cannot read a file that is not open!');
+        var buffer = '';
+        function readData(results) {
+            if (results) {
+                buffer += decodeRead(results);
+                extComputer.invoke(this.fileSystem, "read", [this.handle, Number.MAX_VALUE], (res) => {
+                    readData.call(this, res);
+                });
+            } else {
+                cb(buffer);
+            }
+        }
+        extComputer.invoke(this.fileSystem, "read", [this.handle, Number.MAX_VALUE], (res) => {
+            readData.call(this, res);
+        });
+    }
+
+    write(cb) {
+        if (!this.handle) throw new Error('Cannot write to a file that is not open!');
+        //not done yet
+    }
+
+    /**
+     * Open a FileHandler
+     * @param {function} cb Callback
+     */
+    open(cb) {
+        extComputer.invoke(this.fileSystem, 'exists', [this.file], (b) => {
+            if (b) {
+                extComputer.invoke(this.fileSystem, "open", [this.file], (handle) => {
+                    this.handle = handle;
+                    cb();
+                });
+            } else throw new Error(`"${this.file}" does not exists on "${this.fileSystem}"`);
+        }, (err) => {
+            throw err;
+        });
+    }
+
+    /**
+     * Closes a FileHandler
+     * @param {function} cb Callback
+     */
+    close(cb) {
+        if (!this.handle) throw new Error('Cannot close a FileHandler that is not Open!');
+        extComputer.invoke(this.fileSystem, 'close', [this.handle], () => {
+            cb();
+        }, (err) => {
+            throw err;
+        });
+    }
+}
+
+var eventfile = new FileHandler('/EventEmitter.js');
+eventfile.open(() => {
+    eventfile.read((v) => {
+        var EventEmitter = eval(v);
+        var t = new EventEmitter();
+
+        t.on('hello', (msg) => {
+            term.write(msg);
+        });
+
+        t.emit('hello', 'www');
+    });
+});
+
+term.write('Basic Implementation Finished');
+//onSignal = function () {
+//    write('GOT SIGNAL ' + JSON.stringify(arguments));
 //}
-//term.print('test');
-//term.print('test2');
-
-//term.write(1, max.y, 'looooooooooooooooooooooooooooooong test'); //override test
-
-/* keyboard testing */
-//var s = computer.pullSignal();
-//term.print(s);
-//term.print('fs ls: ' + fs.ls('/').toString());
-
-//term.write(1, 15, Math.random());
+//onSignal('key_down', function (addr, char, code, pn) {
+//    write('KEYDOWN');
+//});
