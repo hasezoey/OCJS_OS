@@ -172,14 +172,6 @@ class EventEmitter {
     }
 }
 
-/** 
- * Alias addListener to on
- */
-EventEmitter.prototype.addListener = EventEmitter.prototype.on;
-
-/**
- * Alias .off to .removeListener
- */
-EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+if (false) module.exports = EventEmitter; // Intellisense hack
 
 EventEmitter // return it in the eval()
