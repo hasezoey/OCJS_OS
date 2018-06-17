@@ -82,7 +82,7 @@ class CComputer {
         computer.error(err);
     }
 }
-var extComputer = new CComputer(); // init the Class
+//var extComputer = new CComputer(); // init the Class
 
 class CTerm {
     constructor() {
@@ -125,7 +125,7 @@ class CTerm {
         });
     }
 }
-var term = new CTerm(); // init the term Class
+//var term = new CTerm(); // init the term Class
 
 class FileHandler {
     /**
@@ -199,21 +199,52 @@ class FileHandler {
     }
 }
 
-var eventfile = new FileHandler('/EventEmitter.js');
-eventfile.open(() => {
-    eventfile.read((v) => {
-        var EventEmitter = eval(v);
-        var t = new EventEmitter();
+//var eventfile = new FileHandler('/EventEmitter.js');
+//eventfile.open(() => {
+//    eventfile.read((v) => {
+//        if (false) var EventEmitter = require('./EventEmitter_ES6'); // Intellisense hack
+//        EventEmitter = eval(v);
+//        var t = new EventEmitter();
+//        // these two are only for late use here
+//        class test extends EventEmitter { }
 
-        t.on('hello', (msg) => {
-            term.write(msg);
-        });
+//        term.write('Basic Implementation Finished');
+//    });
+//});
 
-        t.emit('hello', 'www');
+var _nextTickArray = [];
+function nextTick(next) {
+    _nextTickArray.push(next);
+}
+
+
+
+var tickCount = -1;
+onSignal = function() {
+    computer.sleep(0);
+    tickCount++;
+    _nextTickArray.forEach((v, index) => {
+        v();
+        _nextTickArray.splice(index, 1);
     });
-});
-
-term.write('Basic Implementation Finished');
+    //if (tickCount == 0) var extComputer = new CComputer(); // init the Class
+    //if (tickCount == 1) var term = new CTerm(); // init the term Class
+    //if (tickCount == 2) {
+    //    var eventfile = new FileHandler('/EventEmitter.js');
+    //    eventfile.open(() => {
+    //        eventfile.read((v) => {
+    //            if (false) var EventEmitter = require('./EventEmitter_ES6'); // Intellisense hack
+    //            EventEmitter = eval(v);
+    //            var t = new EventEmitter();
+    //            // these two are only for late use here
+    //            class test extends EventEmitter { }
+    //        });
+    //    });
+    //}
+    //if (tickCount >= 3) {
+    //    term.write('Basic Implementation Finished');
+    //}
+}
 //onSignal = function () {
 //    write('GOT SIGNAL ' + JSON.stringify(arguments));
 //}
