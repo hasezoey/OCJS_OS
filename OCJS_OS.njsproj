@@ -25,16 +25,19 @@
     <Folder Include="OS\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="OS\EEPROM.js" />
-    <Compile Include="OS\EEPROM_JSDOC.js" />
-    <Compile Include="OS\EventEmitter_ES6.js" />
-    <Compile Include="OS\init_ES6.js" />
+    <Content Include="OS\EEPROM.js" />
+    <Content Include="OS\EEPROM_JSDOC.js" />
+    <Content Include="OS\EventEmitter_ES6.js" />
+    <Content Include="OS\init_ES6.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
     <Content Include="OS\README.md" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="OS\devEEPROM.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <!--Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them.-->
