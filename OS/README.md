@@ -1,7 +1,7 @@
-# Introduction / to notice
-
-# Install
+## Install
 `npm i -g babel-cli`<br>
-`npm i -D babel-preset-env`<br>
-run it with `npx babel .\init_ES6.js --watch --presets babel-preset-env --out-file ./init.js` (init.js file)<br>
-and `npx babel .\EventEmitter_ES6.js --watch --presets babel-preset-env --out-file ./EventEmitter.js` (EventEmitter file)<br>
+`npm i`<br>
+start the file watcher with `npm run-script build`<br>
+
+## Description
+use `devEEPROM.js` when you cloned *(/have the project in)* the address of the plate *(/world save)*<br>

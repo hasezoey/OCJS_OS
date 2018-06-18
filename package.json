@@ -6,7 +6,9 @@
   "devDependencies": {
     "babel-preset-env": "^1.7.0"
   },
-  "scripts": {},
+  "scripts": {
+    "build": "npx babel ./OS --watch --presets babel-preset-env --out-dir ./build"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hasezoey/OCJS_OS.git"

@@ -39,7 +39,7 @@ function scaninit(cb) {
     saw(function (cb) {
         index++;
         if (index <= drives.length - 1) {
-            computer.invoke(drives[index], 'exists', ["/OS/init.js"], function (b) { //clear lowest line
+            computer.invoke(drives[index], 'exists', ["/build/init.js"], function (b) { //clear lowest line
                 if (b) {
                     cb(false, drives[index]);
                 } else cb(true);
@@ -79,7 +79,7 @@ setScreens(function (err) {
         computer.invoke(gpu, 'setBackground', [0], function () {
             computer.invoke(gpu, 'fill', [1, 1, x, y, " "], function () {
                 scaninit(function (addr) {
-                    computer.invoke(addr, 'open', ['/OS/init.js'], function (handle) {
+                    computer.invoke(addr, 'open', ['/build/init.js'], function (handle) {
                         var buffer = '';
                         function readData(results) {
                             if (results) {
