@@ -1,4 +1,4 @@
-/*Prettyer & modifyed version of https://github.com/jimgswang/EventEmitter */
+/* Prettyer & modifyed version of https://github.com/jimgswang/EventEmitter */
 var slice = Array.prototype.slice;
 
 class EventEmitter {
@@ -16,14 +16,13 @@ class EventEmitter {
 
     /**
      * Register an event that will trigger listener
-     * @param {Mixed} evt - The event to listen for
+     * @param {string} evt - The event to listen for
      * @param {function} listener - The function to call when evt happens
      * @returns {Object} - Return the emitter
      */
     on(evt, listener) {
-        if (typeof listener !== 'function') {
+        if (typeof listener !== 'function') 
             throw new TypeError('listener should be a function');
-        }
 
         this._events[evt] = this._events[evt] || [];
         this._events[evt].push(listener);
@@ -34,7 +33,7 @@ class EventEmitter {
 
     /**
      * Trigger an event
-     * @param {Mixed} evt - The event to trigger
+     * @param {string} evt - The event to trigger
      * @param {Mixed} [..var_args] - Optional arguments to pass to listener
      * @returns {Boolean} - true if evt trigged a listener 
      */
@@ -45,12 +44,10 @@ class EventEmitter {
 
         if (listeners && listeners.length) {
             listeners.forEach(function (item) {
-                if (typeof item === 'function') {
+                if (typeof item === 'function')
                     item.apply(self, args);
-                }
-                else if (typeof item === 'object' && item.outer) {
+                else if (typeof item === 'object' && item.outer) 
                     item.outer.apply(self, args);
-                }
             });
 
             return true;
@@ -66,37 +63,29 @@ class EventEmitter {
      * @returns {Object} - Returns the emitter
      */
     removeAllListeners(evt) {
-        if (evt) {
-            delete this._events[evt];
-        }
-
-        else {
-            this._events = {};
-        }
+        if (evt) delete this._events[evt];
+        else this._events = {};
 
         return this;
     }
 
     /** Remove a listener from an event
-     * @param {Mixed} evt - The event to remove from
+     * @param {string} evt - The event to remove from
      * @param {Function} listener - The listener to remove
      * @returns {Object} - Returns the emitter
      */
     removeListener(evt, listener) {
         var listeners = this._events[evt];
 
-        if (typeof listener !== 'function') {
+        if (typeof listener !== 'function') 
             throw new TypeError('listener must be a function');
-        }
 
         if (listeners) {
             listeners.forEach(function (item, index, arr) {
-                if (item === listener) {
+                if (item === listener) 
                     arr.splice(index, 1);
-                }
-                else if (typeof item === 'object' && item.inner === listener) {
+                else if (typeof item === 'object' && item.inner === listener) 
                     arr.splice(index, 1);
-                }
             });
         }
 
@@ -107,7 +96,7 @@ class EventEmitter {
     /**
      * Register an event listener to be fired once
      * Once the event has triggered, the listener is removed
-     * @param {Mixed} evt - The event to listen for
+     * @param {string} evt - The event to listen for
      * @param {Function} listener - The function to trigger
      * @returns {Object} - Return the emitter
      */
@@ -115,9 +104,8 @@ class EventEmitter {
         var self = this,
             wrapper;
 
-        if (typeof listener !== 'function') {
+        if (typeof listener !== 'function') 
             throw new TypeError('listener must be a function');
-        }
 
         wrapper = function wrap() {
             listener.apply(self, slice.call(arguments));
@@ -142,7 +130,7 @@ class EventEmitter {
 
     /**
      * Return an array of listeners for an event
-     * @param {Mixed} evt - The event whose listeners to get
+     * @param {string} evt - The event whose listeners to get
      * @returns {Array} - An array of listeners for the event
      *                    Empty array if event isnt registered
      */
@@ -155,16 +143,14 @@ class EventEmitter {
     /**
      * Return the number of listeners for an event on an emitter
      * @param {EventEmitter} emitter - the emitter to check
-     * @param {Mixed} evt - The event to check
+     * @param {string} evt - The event to check
      * @returns {Number} - The number of listeners for evt on emitter
      */
     listenerCount(emitter, evt) {
         var isEventEmitter = emitter instanceof EventEmitter,
             listeners;
 
-        if (!isEventEmitter) {
-            return 0;
-        }
+        if (!isEventEmitter) return 0;
 
         listeners = emitter._events[evt];
 
