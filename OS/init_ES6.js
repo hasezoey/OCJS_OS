@@ -245,7 +245,10 @@ var term = new CTerm();
 //onSignal = function () {
 //    term.write('GOT SIGNAL ' + JSON.stringify(arguments));
 //}
-
+function t() {
+    term.write('GOT SIGNAL ' + JSON.stringify(arguments));
+}
+t
 //onSignal('key_down', function (addr, char, code, pn) {
 //    write('KEYDOWN');
 //});

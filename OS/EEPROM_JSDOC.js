@@ -116,7 +116,12 @@ setScreens(function (err) {
                             } else {
                                 computer.invoke(addr, 'close', [handle], function () {
                                     try {
-                                        eval(buffer);
+                                        onSignal = eval(buffer); // this is that "onSignal" can be defined (the os must make it like so:)
+                                        /**
+                                         * function t() { write('got signal') }
+                                         * // and return it with
+                                         * t // without the "()"
+                                         */ 
                                     }
                                     catch (err) {
                                         computer.error(err);
