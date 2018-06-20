@@ -29,8 +29,7 @@ class BComputer {
 
     /**
      * Set the time where the next normal Tick is called
-     * (Currently not known what it is, it is ms or seconds?)
-     * @param {number} time
+     * @param {number} time in seconds
      */
     sleep(time) { }
 

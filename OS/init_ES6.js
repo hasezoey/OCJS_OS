@@ -243,7 +243,7 @@ var term = new CTerm();
 //}
 
 function onSignal() {
-    computer.sleep(100);
+    computer.sleep(0);
     term.write('GOT SIGNAL ' + JSON.stringify(arguments || {}));
 }
 
