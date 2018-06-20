@@ -216,7 +216,7 @@ var extComputer = new CComputer();
 var term = new CTerm();
 
 //var tickCount = -1;
-//onSignal = function() {
+//function onSignal() {
 //    computer.sleep(0);
 //    tickCount++;
 //    _nextTickArray.forEach((v, index) => {
@@ -242,13 +242,9 @@ var term = new CTerm();
 //    }
 //}
 
-//onSignal = function () {
-//    term.write('GOT SIGNAL ' + JSON.stringify(arguments));
-//}
-function t() {
-    term.write('GOT SIGNAL ' + JSON.stringify(arguments));
+function onSignal() {
+    computer.sleep(100);
+    term.write('GOT SIGNAL ' + JSON.stringify(arguments || {}));
 }
-t
-//onSignal('key_down', function (addr, char, code, pn) {
-//    write('KEYDOWN');
-//});
+
+onSignal; // return it to the eval in the EEPROM

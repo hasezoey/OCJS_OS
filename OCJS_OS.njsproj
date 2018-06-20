@@ -37,6 +37,9 @@
     <Content Include="README.md" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OS\computer_JSDOC.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="OS\devEEPROM.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />

@@ -4,4 +4,7 @@ install all needed packages`npm i`<br>
 start the file watcher with `npm run-script build`<br>
 
 ## Description
-use `devEEPROM.js` when you cloned *(/have the project in)* the address of the plate *(/world save)*<br>
+use `devEEPROM.js` when the main (compiled) files are in /build like `/build/init_ES6.js`<br>
+use `EEPROM_JSDOC.js` for documentation + for intellisense<br>
+
+normally use `EEPROM.js`
