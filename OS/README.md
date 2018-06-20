@@ -1,6 +1,6 @@
 ## Install
-`npm i -g babel-cli`<br>
-`npm i`<br>
+install babel `npm i -g babel-cli`<br>
+install all needed packages`npm i`<br>
 start the file watcher with `npm run-script build`<br>
 
 ## Description

@@ -2,8 +2,8 @@
   "name": "ocjs_os",
   "version": "0.1.0",
   "description": "OpenComputers JavaScript Operating System",
-  "main": "./OS/EEPROM.js",
-  "devDependencies": {
+  "main": "./build/EEPROM.js",
+  "dependencies": {
     "babel-preset-env": "^1.7.0"
   },
   "scripts": {

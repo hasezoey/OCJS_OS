@@ -1,3 +1,5 @@
+'use strict';
+
 /* This is the non-JSDOC Version */
 function getCompList(type) {
     var allComp = computer.list();
@@ -21,11 +23,9 @@ function setScreens(cb, addr) {
             cb(err);
         });
     }
-    if (addr) set();
-    else {
+    if (addr) set();else {
         computer.invoke(gpu, 'getScreen', [], function (address) {
-            if (!address || address.trim() == '') set();
-            else cb();
+            if (!address || address.trim() == '') set();else cb();
         }, function (err) {
             cb(err);
         });
@@ -39,7 +39,8 @@ function scaninit(cb) {
     saw(function (cb) {
         index++;
         if (index <= drives.length - 1) {
-            computer.invoke(drives[index], 'exists', ["/build/init.js"], function (b) { //clear lowest line
+            computer.invoke(drives[index], 'exists', ["/build/init_ES6.js"], function (b) {
+                //clear lowest line
                 if (b) {
                     cb(false, drives[index]);
                 } else cb(true);
@@ -79,24 +80,23 @@ setScreens(function (err) {
         computer.invoke(gpu, 'setBackground', [0], function () {
             computer.invoke(gpu, 'fill', [1, 1, x, y, " "], function () {
                 scaninit(function (addr) {
-                    computer.invoke(addr, 'open', ['/build/init.js'], function (handle) {
+                    computer.invoke(addr, 'open', ['/build/init_ES6.js'], function (handle) {
                         var buffer = '';
                         function readData(results) {
                             if (results) {
                                 buffer += decodeRead(results);
-                                computer.invoke(addr, "read", [handle, Number.MAX_VALUE], readData, function (err) { });
+                                computer.invoke(addr, "read", [handle, Number.MAX_VALUE], readData, function (err) {});
                             } else {
                                 computer.invoke(addr, 'close', [handle], function () {
                                     try {
                                         eval(buffer);
-                                    }
-                                    catch (err) {
+                                    } catch (err) {
                                         computer.error(err);
                                     }
-                                }, function () { });
+                                }, function () {});
                             }
                         }
-                        computer.invoke(addr, "read", [handle, Number.MAX_VALUE], readData, function (err) { });
+                        computer.invoke(addr, "read", [handle, Number.MAX_VALUE], readData, function (err) {});
                     }, function () {
                         computer.print('Cloud not open "init.js" on ' + addr);
                     });
