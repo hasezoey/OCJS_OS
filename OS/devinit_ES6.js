@@ -114,7 +114,7 @@ class CTerm {
                 }, (err) => {
                     extComputer.crash(err);
                 });
-            }
+            } else this.x += msg.length
         }, function (err) {
             extComputer.crash(err);
         });
@@ -207,11 +207,6 @@ class FileHandler {
 //    });
 //});
 
-//var _nextTickArray = [];
-//function nextTick(next) {
-//    _nextTickArray.push(next);
-//}
-
 var extComputer = new CComputer();
 var term = new CTerm();
 
@@ -242,9 +237,68 @@ var term = new CTerm();
 //    }
 //}
 
+/* start Intellisense hacks */
+if (false) { // can be deleted when the space is needed
+    var EventEmitter = require('./EventEmitter_ES6'); // Intellisense hack, will never be Executed
+}
+/* end Intellisense hacks */
+
+/**Set this to true to set the sleep to non-init mode */
+var initFinished = false;
+var tickCount = -1;
+/**
+ * This is needed as storage between ticks / calls
+ */
+var storage = { // can be deleted when the space is needed (can be replaced to `var storage = {}`)
+    /**@type {EventEmitter}*/
+    EventEmitter: null,
+    /**@type {EventEmitter}*/
+    signal: null,
+};
+
+/**
+ * the onSignal Function
+ */
 function onSignal() {
-    computer.sleep(0);
-    term.write('GOT SIGNAL ' + JSON.stringify(arguments || {}));
+    if (arguments.length > 0) term.write('GOT SIGNAL ' + JSON.stringify(arguments || {})); // DEBUG
+    tickCount++;
+    computer.sleep(initFinished ? 2 : 0);
+    if (!storage.signal && storage.EventEmitter) storage.signal = new storage.EventEmitter();
+    if (arguments.length > 0 && storage.EventEmitter)
+        storage.signal.emit(
+            arguments[0],
+            Object.keys(arguments).slice(1).map((v) => arguments[v]));
+
+    switch (tickCount) { // no default
+        case 0:
+            setupEventEmitter();
+            break;
+        case 1:
+            storage.signal.on('key_down', (obj) => {
+                term.write(String.fromCharCode(obj[1]));
+                term.write(obj);
+            });
+            break;
+        case 2:
+            term.write('Basic Implementation Finished');
+            break;
+    }
+}
+
+function setupEventEmitter() {
+    var eventfile = new FileHandler('/build/EventEmitter_ES6.js');
+    try {
+        term.write('loading /build/EventEmitter_ES6.js ...', false);
+        eventfile.open(() => {
+            eventfile.read((v) => {
+                storage.EventEmitter = eval(v);
+                term.write(' loaded');
+            });
+        });
+    }
+    catch (err) {
+        computer.error(err);
+    }
 }
 
 onSignal; // return it to the eval in the EEPROM
