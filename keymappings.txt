@@ -1,0 +1,2 @@
+Enter GOT SIGNAL {"0":"key_down","1":"c644d79c-ddd7-417d-acdd-abcb7477dee7","2":13,"3":28,"4":"hasezoey"}
+Back GOT SIGNAL {"0":"key_down","1":"c644d79c-ddd7-417d-acdd-abcb7477dee7","2":8,"3":14,"4":"hasezoey"}

@@ -29,6 +29,9 @@
     <Content Include="OS\EEPROM_JSDOC.js" />
     <Content Include="OS\EventEmitter_ES6.js" />
     <Content Include="OS\devinit_ES6.js" />
+    <Content Include="t.json">
+      <SubType>Code</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />

@@ -77,50 +77,127 @@ class CComputer {
         computer.error(err);
     }
 }
-//var extComputer = new CComputer(); // init the Class
 
 class CTerm {
     constructor() {
+        /**@type {number} */
         this.x = 1;
+        /**@type {number} */
         this.y = 1;
+
+        /** Listen for "key_down" signals? */
+        this.key_down = false;
+        /** This Buffer buffers all key inputes (when this.key_down is true) */
+        this.writeingBuffer = '';
     }
 
     /**
      * Write something to the screen
-     * @param {string | object} msg Text to write
+     * @param {string} msg Text to write
      * @param {boolean} [wrap] Line wrap?
      */
     write(msg, wrap = true) {
-        if (typeof msg == 'object') msg = JSON.stringify(msg);
         if (typeof msg != 'string' && msg.toString) msg = msg.toString();
+        if (typeof msg == 'object') msg = JSON.stringify(msg);
         if (typeof msg != 'string' && !msg.toString) throw new Error('(term.write) msg.toString is not a function!');
 
         var gpu = extComputer.compListOfType('gpu')[0];
-        extComputer.invoke(gpu, 'set', [this.x, this.y, msg], () => {
-            if (wrap) {
-                extComputer.invoke(gpu, 'getResolution', [], (x, y) => {
-                    this.x = 1;
-                    if (this.y + 1 > y) {
-                        extComputer.invoke(gpu, 'copy', [1, 1, x, y, 0, -1], () => {
-                            extComputer.invoke(gpu, 'fill', [1, y, x, 1, " "], () => {
-                                this.y = y;
-                            }, (err) => {
-                                extComputer.crash(err);
-                            });
+        extComputer.invoke(gpu, 'getResolution', [], (maxx, maxy) => {
+            if (this.x > maxx) this.y += 1;
+
+            /**
+             * Execute a copy & fill (bott line clear and move text one up)
+             * @param {function} cb
+             */
+            function copyfill(cb) {
+                if (this.y > maxy) {
+                    extComputer.invoke(gpu, 'copy', [1, 1, maxx, maxy, 0, -1], () => {
+                        extComputer.invoke(gpu, 'fill', [1, maxy, maxx, 1, " "], () => {
+                            this.y = maxy;
+                            cb();
                         }, (err) => {
                             extComputer.crash(err);
                         });
-                    } else this.y += 1
-                }, (err) => {
-                    extComputer.crash(err);
+                    }, (err) => {
+                        extComputer.crash(err);
+                    });
+                } else cb();
+            }
+
+            /** Set it to the screen */
+            function set() {
+                var amsg = [msg];
+                if (this.x + msg.length > maxx) {
+                    var index = -1;
+                    while (msg.length > 0) {
+                        index++;
+                        amsg[index] = msg.substring(0, maxx - this.x + 1);
+                        msg = msg.substring(maxx - this.x + 1);
+                    }
+                }
+                extComputer.printToLog(amsg);
+                var index = -1;
+                saw((cb) => {
+                    index++;
+                    if (index <= amsg.length - 1) {
+                        copyfill.call(this, () => {
+                            var v = amsg[index];
+                            extComputer.invoke(gpu, 'set', [this.x, this.y, v], () => {
+                                if (wrap || this.x + 1 > maxx) {
+                                    this.x = 1;
+                                    this.y += 1;
+                                }
+                                else this.x += v.length;
+                                cb(true);
+                            }, (err) => {
+                                extComputer.crash(err);
+                            });
+                        });
+                    } else cb(false);
+                }, () => { });
+            }
+
+            if (this.y > maxy) {
+                copyfill.call(this, () => {
+                    set.call(this);
                 });
-            } else this.x += msg.length
-        }, function (err) {
+            } else set.call(this);
+        }, (err) => {
             extComputer.crash(err);
         });
     }
+
+    /**
+     * Setup the "key_down" Listener (to write commands and so)
+     * -> call this only when storage & storage.signal is already defined (otherwise it will do nothing)
+     */
+    setupKey_downListener() {
+        if (storage && storage.signal) {
+            term.write('Init term:key_down_Listener ...', false);
+            storage.signal.on('key_down', (obj) => {
+                if (this.key_down) {
+                    switch (obj[1]) {
+                        case 13: // Enter
+
+                            break;
+                        case 8: // Back
+                            var gpu = extComputer.compListOfType('gpu')[0];
+                            extComputer.invoke(gpu, 'set', [this.x-1, this.y, " "], () => {
+                                this.x = this.x - 1 < 1 ? 1 : this.x - 1;
+                            });
+                            break;
+                        default:
+                            var key = String.fromCharCode(obj[1]);
+                            this.writeingBuffer += key;
+                            term.write(key, false);
+                            break;
+                    }
+                }
+            });
+            term.write(' finished');
+        }
+    }
 }
-//var term = new CTerm(); // init the term Class
 
 class FileHandler {
     /**
@@ -194,48 +271,8 @@ class FileHandler {
     }
 }
 
-//var eventfile = new FileHandler('/EventEmitter.js');
-//eventfile.open(() => {
-//    eventfile.read((v) => {
-//        if (false) var EventEmitter = require('./EventEmitter_ES6'); // Intellisense hack
-//        EventEmitter = eval(v);
-//        var t = new EventEmitter();
-//        // these two are only for late use here
-//        class test extends EventEmitter { }
-
-//        term.write('Basic Implementation Finished');
-//    });
-//});
-
 var extComputer = new CComputer();
 var term = new CTerm();
-
-//var tickCount = -1;
-//function onSignal() {
-//    computer.sleep(0);
-//    tickCount++;
-//    _nextTickArray.forEach((v, index) => {
-//        v();
-//        _nextTickArray.splice(index, 1);
-//    });
-//    if (tickCount == 0) var extComputer = new CComputer(); // init the Class
-//    if (tickCount == 1) var term = new CTerm(); // init the term Class
-//    if (tickCount == 2) {
-//    //    var eventfile = new FileHandler('/EventEmitter.js');
-//    //    eventfile.open(() => {
-//    //        eventfile.read((v) => {
-//    //            if (false) var EventEmitter = require('./EventEmitter_ES6'); // Intellisense hack
-//    //            EventEmitter = eval(v);
-//    //            var t = new EventEmitter();
-//    //            // these two are only for late use here
-//    //            class test extends EventEmitter { }
-//    //        });
-//    //    });
-//    //}
-//    //if (tickCount >= 3) {
-//    //    term.write('Basic Implementation Finished');
-//    }
-//}
 
 /* start Intellisense hacks */
 if (false) { // can be deleted when the space is needed
@@ -246,22 +283,20 @@ if (false) { // can be deleted when the space is needed
 /**Set this to true to set the sleep to non-init mode */
 var initFinished = false;
 var tickCount = -1;
-/**
- * This is needed as storage between ticks / calls
- */
+/** This is needed as storage between ticks / calls */
 var storage = { // can be deleted when the space is needed (can be replaced to `var storage = {}`)
     /**@type {EventEmitter}*/
     EventEmitter: null,
     /**@type {EventEmitter}*/
-    signal: null,
+    signal: null
 };
 
 /**
  * the onSignal Function
  */
 function onSignal() {
-    if (arguments.length > 0) term.write('GOT SIGNAL ' + JSON.stringify(arguments || {})); // DEBUG
-    tickCount++;
+    if (arguments.length > 0) extComputer.printToLog('GOT SIGNAL ' + JSON.stringify(arguments || {})); // DEBUG
+    if (!initFinished) tickCount++;
     computer.sleep(initFinished ? 2 : 0);
     if (!storage.signal && storage.EventEmitter) storage.signal = new storage.EventEmitter();
     if (arguments.length > 0 && storage.EventEmitter)
@@ -269,20 +304,30 @@ function onSignal() {
             arguments[0],
             Object.keys(arguments).slice(1).map((v) => arguments[v]));
 
-    switch (tickCount) { // no default
-        case 0:
-            setupEventEmitter();
-            break;
-        case 1:
-            storage.signal.on('key_down', (obj) => {
-                term.write(String.fromCharCode(obj[1]));
-                term.write(obj);
-            });
-            break;
-        case 2:
-            term.write('Basic Implementation Finished');
-            break;
+    if (!initFinished) {
+        switch (tickCount) { // no default
+            case 0:
+                setupEventEmitter();
+                break;
+            case 1: //setup basic signals
+                term.write('Settingup Basic Signals ...', false);
+                term.write(' finished');
+                break;
+            case 2: // init basic cli terminal
+                term.setupKey_downListener();
+                term.key_down = true;
+                break;
+            case 3:
+                term.write('Basic Implementation Finished');
+                term.write('this is a test for a line wrap: ' + new Array(850).join('Minecraft'));
+                initFinished = true;
+                break;
+        }
     }
+
+    // this should be executet in each tick until all autostart programms are loaded
+    //term.write('Running all Autostart Programs ...', false);
+    //term.write(' finished');
 }
 
 function setupEventEmitter() {
