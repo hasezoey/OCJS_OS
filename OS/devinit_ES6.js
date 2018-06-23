@@ -296,8 +296,8 @@ var storage = { // can be deleted when the space is needed (can be replaced to `
  */
 function onSignal() {
     if (arguments.length > 0) extComputer.printToLog('GOT SIGNAL ' + JSON.stringify(arguments || {})); // DEBUG
-    if (!initFinished) tickCount++;
-    computer.sleep(initFinished ? 2 : 0);
+    /*if (!initFinished)*/ tickCount++; // modifying this line
+    computer.sleep(/*initFinished ? 2 : */0); // and this
     if (!storage.signal && storage.EventEmitter) storage.signal = new storage.EventEmitter();
     if (arguments.length > 0 && storage.EventEmitter)
         storage.signal.emit(
