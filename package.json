@@ -1,29 +1,30 @@
 {
-  "name": "ocjs_os",
-  "version": "0.1.0",
-  "description": "OpenComputers JavaScript Operating System",
-  "main": "./build/EEPROM.js",
-  "dependencies": {
-    "babel-preset-env": "^1.7.0"
-  },
-  "scripts": {
-    "build": "npx babel ./OS --watch --presets babel-preset-env --out-dir ./build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hasezoey/OCJS_OS.git"
-  },
-  "keywords": [
-    "OpenComputers",
-    "JS",
-    "OCJS",
-    "OS",
-    "OperatingSystem"
-  ],
-  "author": "hasezoey",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/hasezoey/OCJS_OS/issues"
-  },
-  "homepage": "https://github.com/hasezoey/OCJS_OS"
+    "name": "ocjs_os",
+    "version": "0.1.0",
+    "description": "OpenComputers JavaScript Operating System",
+    "main": "./build/EEPROM.js",
+    "dependencies": {
+        "babel-preset-env": "^1.7.0"
+    },
+    "scripts": {
+        "build": "npx babel ./OS --watch --presets babel-preset-env --out-dir ./build",
+        "log": "Get-Content -Path \"../../../../logs\fml-client-latest.log\" -Wait"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hasezoey/OCJS_OS.git"
+    },
+    "keywords": [
+        "OpenComputers",
+        "JS",
+        "OCJS",
+        "OS",
+        "OperatingSystem"
+    ],
+    "author": "hasezoey",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/hasezoey/OCJS_OS/issues"
+    },
+    "homepage": "https://github.com/hasezoey/OCJS_OS"
 }
