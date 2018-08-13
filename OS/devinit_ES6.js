@@ -1,3 +1,4 @@
+/* global scaninit:false decodeRead:false saw:false */
 /* This is the JSDOC Version
  * 
  * This is the ES6 Version of the Basic "init.js"
@@ -14,19 +15,19 @@ scaninit((addr) => {
  * Basic Computer Class (to keep it sorted)
  */
 class CComputer {
-    constructor() { }
+    constructor() {}
 
     /**
      * Log to the Minecraft Log
      * @param {string} msg The Message to Log
+     * @returns {void}
      */
     printToLog(msg) {
         if (typeof msg == 'object') msg = JSON.stringify(msg);
-        if (typeof msg != 'string') {
+        if (typeof msg != 'string')
             throw new TypeError('"' + msg + '" is not an Object or String!');
-        } else {
+        else
             computer.print(msg);
-        }
     }
 
     /**
@@ -36,23 +37,24 @@ class CComputer {
      * @param {any[]} options Options in Array
      * @param {function} cb Normal Callback
      * @param {function} [errcb] Error Callback
+     * @returns {void}
      */
     invoke(addr, method, options, cb, errcb) {
-        if (!errcb) errcb = () => { };
+        if (!errcb) errcb = () => {};
         computer.invoke(addr, method, options, cb, errcb);
     }
 
     /**
      * Get a List of Component Addresses
-     * @returns {string[]}
+     * @returns {string[]} Returns the Results
      */
     compList() {
         var allComp = computer.list();
         var results = [];
         for (var comp in allComp) {
             results.push({ // its an object to make it better for JS usage
-                "type": allComp[comp],
-                "address": comp
+                'type': allComp[comp],
+                'address': comp
             });
         }
         return results;
@@ -72,6 +74,7 @@ class CComputer {
     /**
      * Crash the PC with an Error
      * @param {string | Error} err
+     * @returns {void}
      */
     crash(err) {
         computer.error(err);
@@ -95,6 +98,7 @@ class CTerm {
      * Write something to the screen
      * @param {string} msg Text to write
      * @param {boolean} [wrap] Line wrap?
+     * @returns {void}
      */
     write(msg, wrap = true) {
         if (typeof msg != 'string' && msg.toString) msg = msg.toString();
@@ -108,11 +112,12 @@ class CTerm {
             /**
              * Execute a copy & fill (bott line clear and move text one up)
              * @param {function} cb
+             * @returns {void}
              */
             function copyfill(cb) {
                 if (this.y > maxy) {
                     extComputer.invoke(gpu, 'copy', [1, 1, maxx, maxy, 0, -1], () => {
-                        extComputer.invoke(gpu, 'fill', [1, maxy, maxx, 1, " "], () => {
+                        extComputer.invoke(gpu, 'fill', [1, maxy, maxx, 1, ' '], () => {
                             this.y = maxy;
                             cb();
                         }, (err) => {
@@ -124,11 +129,14 @@ class CTerm {
                 } else cb();
             }
 
-            /** Set it to the screen */
+            /** 
+             * Set it to the screen 
+             * @returns {void}
+             */
             function set() {
                 var amsg = [msg];
                 if (this.x + msg.length > maxx) {
-                    var index = -1;
+                    let index = -1;
                     while (msg.length > 0) {
                         index++;
                         amsg[index] = msg.substring(0, maxx - this.x + 1);
@@ -136,7 +144,7 @@ class CTerm {
                     }
                 }
                 extComputer.printToLog(amsg);
-                var index = -1;
+                let index = -1;
                 saw((cb) => {
                     index++;
                     if (index <= amsg.length - 1) {
@@ -146,15 +154,14 @@ class CTerm {
                                 if (wrap || this.x + 1 > maxx) {
                                     this.x = 1;
                                     this.y += 1;
-                                }
-                                else this.x += v.length;
+                                } else this.x += v.length;
                                 cb(true);
                             }, (err) => {
                                 extComputer.crash(err);
                             });
                         });
                     } else cb(false);
-                }, () => { });
+                }, () => {});
             }
 
             if (this.y > maxy) {
@@ -170,6 +177,7 @@ class CTerm {
     /**
      * Setup the "key_down" Listener (to write commands and so)
      * -> call this only when storage & storage.signal is already defined (otherwise it will do nothing)
+     * @returns {void}
      */
     setupKey_downListener() {
         if (storage && storage.signal) {
@@ -182,7 +190,7 @@ class CTerm {
                             break;
                         case 8: // Back
                             var gpu = extComputer.compListOfType('gpu')[0];
-                            extComputer.invoke(gpu, 'set', [this.x-1, this.y, " "], () => {
+                            extComputer.invoke(gpu, 'set', [this.x - 1, this.y, ' '], () => {
                                 this.x = this.x - 1 < 1 ? 1 : this.x - 1;
                             });
                             break;
@@ -216,21 +224,23 @@ class FileHandler {
     /**
      * Reads the File
      * @param {function} cb Callback
+     * @returns {void}
      */
     read(cb) {
         if (!this.handle) throw new Error('Cannot read a file that is not open!');
         var buffer = '';
+
         function readData(results) {
             if (results) {
                 buffer += decodeRead(results);
-                extComputer.invoke(this.fileSystem, "read", [this.handle, Number.MAX_VALUE], (res) => {
+                extComputer.invoke(this.fileSystem, 'read', [this.handle, Number.MAX_VALUE], (res) => {
                     readData.call(this, res);
                 });
             } else {
                 cb(buffer);
             }
         }
-        extComputer.invoke(this.fileSystem, "read", [this.handle, Number.MAX_VALUE], (res) => {
+        extComputer.invoke(this.fileSystem, 'read', [this.handle, Number.MAX_VALUE], (res) => {
             readData.call(this, res);
         });
     }
@@ -243,11 +253,12 @@ class FileHandler {
     /**
      * Open a FileHandler
      * @param {function} cb Callback
+     * @returns {void}
      */
     open(cb) {
         extComputer.invoke(this.fileSystem, 'exists', [this.file], (b) => {
             if (b) {
-                extComputer.invoke(this.fileSystem, "open", [this.file], (handle) => {
+                extComputer.invoke(this.fileSystem, 'open', [this.file], (handle) => {
                     this.handle = handle;
                     cb();
                 });
@@ -260,6 +271,7 @@ class FileHandler {
     /**
      * Closes a FileHandler
      * @param {function} cb Callback
+     * @returns {void}
      */
     close(cb) {
         if (!this.handle) throw new Error('Cannot close a FileHandler that is not Open!');
@@ -275,8 +287,9 @@ var extComputer = new CComputer();
 var term = new CTerm();
 
 /* start Intellisense hacks */
-if (false) { // can be deleted when the space is needed
-    var EventEmitter = require('./EventEmitter_ES6'); // Intellisense hack, will never be Executed
+// can be deleted when the space is needed
+if (false) { // eslint-disable-line
+    var EventEmitter = require('./EventEmitter_ES6'); // eslint-disable-line
 }
 /* end Intellisense hacks */
 
@@ -293,6 +306,7 @@ var storage = { // can be deleted when the space is needed (can be replaced to `
 
 /**
  * the onSignal Function
+ * @returns {void}
  */
 function onSignal() {
     if (arguments.length > 0) extComputer.printToLog('GOT SIGNAL ' + JSON.stringify(arguments || {})); // DEBUG
@@ -330,6 +344,10 @@ function onSignal() {
     //term.write(' finished');
 }
 
+/**
+ * Setup for the Events
+ * @returns {void}
+ */
 function setupEventEmitter() {
     var eventfile = new FileHandler('/build/EventEmitter_ES6.js');
     try {
@@ -340,8 +358,7 @@ function setupEventEmitter() {
                 term.write(' loaded');
             });
         });
-    }
-    catch (err) {
+    } catch (err) {
         computer.error(err);
     }
 }
