@@ -181,7 +181,6 @@ class CTerm {
      */
     setupKey_downListener() {
         if (storage && storage.signal) {
-            term.write('Init term:key_down_Listener ...', false);
             storage.signal.on('key_down', (obj) => {
                 if (this.key_down) {
                     switch (obj[1]) {
@@ -202,7 +201,6 @@ class CTerm {
                     }
                 }
             });
-            term.write(' finished');
         }
     }
 }
@@ -301,7 +299,9 @@ var storage = { // can be deleted when the space is needed (can be replaced to `
     /**@type {EventEmitter}*/
     EventEmitter: null,
     /**@type {EventEmitter}*/
-    signal: null
+    signal: null,
+    /**@type {string} */
+    pcName: 'dev'
 };
 
 /**
@@ -309,7 +309,12 @@ var storage = { // can be deleted when the space is needed (can be replaced to `
  * @returns {void}
  */
 function onSignal() {
-    if (arguments.length > 0) extComputer.printToLog('GOT SIGNAL ' + JSON.stringify(arguments || {})); // DEBUG
+    /**@type {object} */
+    let signal;
+    if (arguments.length > 0) {
+        signal = JSON.stringify(arguments || {});
+        extComputer.printToLog('GOT SIGNAL ' + signal); // DEBUG
+    }
     if (!initFinished) tickCount++;
     computer.sleep(initFinished ? 2 : 0);
     if (!storage.signal && storage.EventEmitter) storage.signal = new storage.EventEmitter();
@@ -319,29 +324,48 @@ function onSignal() {
             Object.keys(arguments).slice(1).map((v) => arguments[v]));
 
     if (!initFinished) {
-        switch (tickCount) { // no default
+        switch (tickCount) {
             case 0:
+                var gpu = extComputer.compListOfType('gpu')[0];
+                extComputer.invoke(gpu, 'setDepth', [8], () => {
+
+                }, (err) => {
+                    extComputer.crash(err);
+                });
+                break;
+            case 1: // init the EventEmitter Class
+                term.write('init storage.EventEmitter ... ');
                 setupEventEmitter();
                 break;
-            case 1: //setup basic signals
-                term.write('Settingup Basic Signals ...', false);
-                term.write(' finished');
-                break;
             case 2: // init basic cli terminal
+                term.write('init term.KeyDownListener ... ', false);
                 term.setupKey_downListener();
                 term.key_down = true;
+                term.write('finished');
                 break;
             case 3:
+                term.write('');
                 term.write('Basic Implementation Finished');
-                term.write('this is a test for a line wrap: ' + new Array(850).join('Minecraft'));
+                term.write('');
+
+                // var gpu = extComputer.compListOfType('gpu')[0];
+                // extComputer.invoke(gpu, 'setForeground', [0xFF0000], () => {
+
+                // }, (err) => {
+                //     extComputer.crash(err);
+                // });
+                term.write(`player@${storage.pcName}:/home$ `, false); // the template
                 initFinished = true;
                 break;
         }
+    } else {
+        if (signal)
+            storage.signal.emit('signal', signal);
+        else
+            storage.signal.emit('tick', {});
     }
 
-    // this should be executet in each tick until all autostart programms are loaded
-    //term.write('Running all Autostart Programs ...', false);
-    //term.write(' finished');
+    // TODO: autostart programms
 }
 
 /**
@@ -351,11 +375,11 @@ function onSignal() {
 function setupEventEmitter() {
     var eventfile = new FileHandler('/build/EventEmitter_ES6.js');
     try {
-        term.write('loading /build/EventEmitter_ES6.js ...', false);
+        term.write('-> loading /build/EventEmitter_ES6.js ... ', false);
         eventfile.open(() => {
             eventfile.read((v) => {
                 storage.EventEmitter = eval(v);
-                term.write(' loaded');
+                term.write('loaded');
             });
         });
     } catch (err) {
