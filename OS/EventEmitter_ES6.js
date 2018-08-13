@@ -21,7 +21,7 @@ class EventEmitter {
      * @returns {Object} - Return the emitter
      */
     on(evt, listener) {
-        if (typeof listener !== 'function') 
+        if (typeof listener !== 'function')
             throw new TypeError('listener should be a function');
 
         this._events[evt] = this._events[evt] || [];
@@ -43,10 +43,10 @@ class EventEmitter {
             self = this;
 
         if (listeners && listeners.length) {
-            listeners.forEach(function (item) {
+            listeners.forEach(function(item) {
                 if (typeof item === 'function')
                     item.apply(self, args);
-                else if (typeof item === 'object' && item.outer) 
+                else if (typeof item === 'object' && item.outer)
                     item.outer.apply(self, args);
             });
 
@@ -77,14 +77,14 @@ class EventEmitter {
     removeListener(evt, listener) {
         var listeners = this._events[evt];
 
-        if (typeof listener !== 'function') 
+        if (typeof listener !== 'function')
             throw new TypeError('listener must be a function');
 
         if (listeners) {
-            listeners.forEach(function (item, index, arr) {
-                if (item === listener) 
+            listeners.forEach(function(item, index, arr) {
+                if (item === listener)
                     arr.splice(index, 1);
-                else if (typeof item === 'object' && item.inner === listener) 
+                else if (typeof item === 'object' && item.inner === listener)
                     arr.splice(index, 1);
             });
         }
@@ -104,7 +104,7 @@ class EventEmitter {
         var self = this,
             wrapper;
 
-        if (typeof listener !== 'function') 
+        if (typeof listener !== 'function')
             throw new TypeError('listener must be a function');
 
         wrapper = function wrap() {
@@ -158,6 +158,7 @@ class EventEmitter {
     }
 }
 
-if (false) module.exports = EventEmitter; // Intellisense hack
+if (false) module.exports = EventEmitter; // eslint-disable-line
+// Intellisense hack
 
-EventEmitter // return it in the eval()
+EventEmitter; // return it in the eval()

@@ -1,7 +1,10 @@
+# Folders
 .vs/
+.vscode/
 .git/
 build/
-package-lock.json
 node_modules/
 
+# Files
 t.json
+package-lock.json
